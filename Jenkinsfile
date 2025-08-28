@@ -24,17 +24,17 @@ pipeline {
                 }
             }
         }
-        stage('Deploy Docker Container') {
-            steps {
-                withCredentials([
-                    sshUserPrivateKey(credentialsId: '<credentials_id>', keyFileVariable: 'SSH_KEY_FILE')
-                ]) {
-                    sh 'scp -o StrictHostKeyChecking=no -i $SSH_KEY_FILE Dockerrun.aws.json ec2-user@<ec2_instance_ip>:/home/ec2-user/'
-                    sh 'ssh -o StrictHostKeyChecking=no -i $SSH_KEY_FILE ec2-user@<ec2_instance_ip> "docker stop calcapp || true"'
-                    sh 'ssh -o StrictHostKeyChecking=no -i $SSH_KEY_FILE ec2-user@<ec2_instance_ip> "docker rm calcapp || true"'
-                    sh 'ssh -o StrictHostKeyChecking=no -i $SSH_KEY_FILE ec2-user@<ec2_instance_ip> "docker run -d --name calcapp -p 80:8080 ${env.ACCOUNTID}.dkr.ecr.${env.REGION}.amazonaws.com/${env.IMAGENAME}:latest"'
-                }
-            }
-        }
+        // stage('Deploy Docker Container') {
+        //     steps {
+        //         withCredentials([
+        //             sshUserPrivateKey(credentialsId: '<credentials_id>', keyFileVariable: 'SSH_KEY_FILE')
+        //         ]) {
+        //             sh 'scp -o StrictHostKeyChecking=no -i $SSH_KEY_FILE Dockerrun.aws.json ec2-user@<ec2_instance_ip>:/home/ec2-user/'
+        //             sh 'ssh -o StrictHostKeyChecking=no -i $SSH_KEY_FILE ec2-user@<ec2_instance_ip> "docker stop calcapp || true"'
+        //             sh 'ssh -o StrictHostKeyChecking=no -i $SSH_KEY_FILE ec2-user@<ec2_instance_ip> "docker rm calcapp || true"'
+        //             sh 'ssh -o StrictHostKeyChecking=no -i $SSH_KEY_FILE ec2-user@<ec2_instance_ip> "docker run -d --name calcapp -p 80:8080 ${env.ACCOUNTID}.dkr.ecr.${env.REGION}.amazonaws.com/${env.IMAGENAME}:latest"'
+        //         }
+        //     }
+        // }
     }
 }
