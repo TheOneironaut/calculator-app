@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        AWSCRAD = '466d0ecd-31fd-4cfe-b85c-a509e54312da'
+        AWSCRAD = '45b042f8-edcf-437e-8cc8-cad41343e56e'
         REGION = 'us-east-1'
         ACCOUNTID = '992382545251'
         IMAGENAME = 'calcapp'
