@@ -1,25 +1,25 @@
 pipeline {
     agent any
-
     environment {
-        AWSCRAD = '45b042f8-edcf-437e-8cc8-cad41343e56e'
-        REGION = 'us-east-1'
+        AWSCRAD   = '45b042f8-edcf-437e-8cc8-cad41343e56e'
+        REGION    = 'us-east-1'
         ACCOUNTID = '992382545251'
         IMAGENAME = 'calcapp'
     }
-
     stages {
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${env.IMAGENAME} ."
+                sh "docker build -t ${env.ACCOUNTID}.dkr.ecr.${env.REGION}.amazonaws.com/${env.IMAGENAME}:latest ."
             }
         }
         stage('Push Docker Image to ECR') {
             steps {
-                withCredentials([aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: '45b042f8-edcf-437e-8cc8-cad41343e56e', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')])
-                {
-                    sh "aws ecr get-login-password --region ${env.REGION} | docker login --username AWS --password-stdin ${env.ACCOUNTID}.dkr.ecr.${env.REGION}.amazonaws.com"
-                    sh "docker push ${env.ACCOUNTID}.dkr.ecr.${env.REGION}.amazonaws.com/${env.IMAGENAME}:latest"
+                withAWS(region: "${env.REGION}", credentials: "${env.AWSCRAD}") {
+                    sh """
+                        aws ecr get-login-password --region ${env.REGION} \
+                          | docker login --username AWS --password-stdin ${env.ACCOUNTID}.dkr.ecr.${env.REGION}.amazonaws.com
+                        docker push ${env.ACCOUNTID}.dkr.ecr.${env.REGION}.amazonaws.com/${env.IMAGENAME}:latest
+                    """
                 }
             }
         }
@@ -29,13 +29,11 @@ pipeline {
                     sshUserPrivateKey(credentialsId: '<credentials_id>', keyFileVariable: 'SSH_KEY_FILE')
                 ]) {
                     sh 'scp -o StrictHostKeyChecking=no -i $SSH_KEY_FILE Dockerrun.aws.json ec2-user@<ec2_instance_ip>:/home/ec2-user/'
-                    sh 'ssh -o StrictHostKeyChecking=no -i $SSH_KEY_FILE ec2-user@<ec2_instance_ip> "docker stop <container_name> || true"'
-                    sh 'ssh -o StrictHostKeyChecking=no -i $SSH_KEY_FILE ec2-user@<ec2_instance_ip> "docker rm <container_name> || true"'
-                    sh 'ssh -o StrictHostKeyChecking=no -i $SSH_KEY_FILE ec2-user@<ec2_instance_ip> "docker run -d --name <container_name> -p 80:8080 ${env.ACCOUNTID}.dkr.ecr.${env.REGION}.amazonaws.com/${env.IMAGENAME}:latest"'
+                    sh 'ssh -o StrictHostKeyChecking=no -i $SSH_KEY_FILE ec2-user@<ec2_instance_ip> "docker stop calcapp || true"'
+                    sh 'ssh -o StrictHostKeyChecking=no -i $SSH_KEY_FILE ec2-user@<ec2_instance_ip> "docker rm calcapp || true"'
+                    sh 'ssh -o StrictHostKeyChecking=no -i $SSH_KEY_FILE ec2-user@<ec2_instance_ip> "docker run -d --name calcapp -p 80:8080 ${env.ACCOUNTID}.dkr.ecr.${env.REGION}.amazonaws.com/${env.IMAGENAME}:latest"'
                 }
             }
         }
     }
 }
-
-
