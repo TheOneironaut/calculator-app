@@ -1,26 +1,24 @@
 pipeline {
     agent any
+    environment {
+        AWSCRAD = '466d0ecd-31fd-4cfe-b85c-a509e54312da'
+        REGION = 'us-east-1'
+        ACCOUNTID = '992382545251'
+        IMAGENAME = 'calcapp'
+    }    
 
     stages {
-        stage('Checkout Repository') {
-            steps {
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']],
-                doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [],
-                userRemoteConfigs: [[credentialsId: '<credentials_id>', url:
-                'https://github.com/<username>/<repo_name>.git']]])
-            }
-        }
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t <image_name> .'
+                sh "docker build -t ${env.IMAGENAME} ."
             }
         }
         stage('Push Docker Image to ECR') {
             steps {
-                withCredentials([aws(credentialsId: '<credentials_id>', region:
-                '<aws_region>')]) {
-                    sh '$(aws ecr get-login-password --region <aws_region> | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.<aws_region>.amazonaws.com)'
-                    sh 'docker push <aws_account_id>.dkr.ecr.<aws_region>.amazonaws.com/<image_name>:latest'
+                withCredentials([aws(credentialsId: ${env.AWSCRAD}, region:
+                ${env.REGION})]) {
+                    sh "$(aws ecr get-login-password --region ${env.REGION} | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.${env.REGION}.amazonaws.com)"
+                    sh "docker push ${env.ACCOUNTID}.dkr.ecr.${env.REGION}.amazonaws.com/${env.IMAGENAME}:latest"
                 }
             }
         }
