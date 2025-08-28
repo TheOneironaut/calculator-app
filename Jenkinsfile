@@ -9,7 +9,8 @@ pipeline {
     stages {
         stage('Build Docker Image') {
             steps {
-                sh "docker build -t ${env.ACCOUNTID}.dkr.ecr.${env.REGION}.amazonaws.com/${env.IMAGENAME}:latest ."
+                sh "docker build -t amitay-jenk ."
+                sh "docker tag amitay-jenk:latest 992382545251.dkr.ecr.us-east-1.amazonaws.com/amitay-jenk:latest"
             }
         }
         stage('Push Docker Image to ECR') {
@@ -18,7 +19,7 @@ pipeline {
                     sh """
                         aws ecr get-login-password --region ${env.REGION} \
                           | docker login --username AWS --password-stdin ${env.ACCOUNTID}.dkr.ecr.${env.REGION}.amazonaws.com
-                        docker push ${env.ACCOUNTID}.dkr.ecr.${env.REGION}.amazonaws.com/${env.IMAGENAME}:latest
+                        docker push 992382545251.dkr.ecr.us-east-1.amazonaws.com/amitay-jenk:latest
                     """
                 }
             }
