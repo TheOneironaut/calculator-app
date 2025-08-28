@@ -15,8 +15,8 @@ pipeline {
         }
         stage('Push Docker Image to ECR') {
             steps {
-                withCredentials([aws(credentialsId: ${env.AWSCRAD}, region:
-                "${env.REGION})"]) {
+                withCredentials([aws(credentialsId: "${env.AWSCRAD}", region:
+                "${env.REGION}")]) {
                     sh "$(aws ecr get-login-password --region ${env.REGION} | docker login --username AWS --password-stdin <aws_account_id>.dkr.ecr.${env.REGION}.amazonaws.com)"
                     sh "docker push ${env.ACCOUNTID}.dkr.ecr.${env.REGION}.amazonaws.com/${env.IMAGENAME}:latest"
                 }
