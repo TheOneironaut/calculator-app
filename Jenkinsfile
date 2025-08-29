@@ -2,17 +2,21 @@ pipeline {
     agent any
     
     environment {
+        // AWS Configuration
         AWSCRED     = 'ec443a4a-c71a-4b3e-bf6b-2a378f47d76a'
         REGION      = 'us-east-1'
         ACCOUNTID   = '992382545251'
         
-        IMAGENAME   = 'calcapp'
+        // Docker Image Configuration
+        IMAGENAME   = 'amitay-jenk'  // עודכן להתאים ל-repository הקיים ב-ECR
         IMAGE_TAG   = 'latest'
         
+        // SSH Configuration  
         SSHCRED     = 'deb05777-3bce-4ec0-8432-68f952f7528e'
-        EC2_HOST    = '52.90.190.67'
+        EC2_HOST    = '52.90.190.67' 
         EC2_USER    = 'ec2-user'
         
+        // Derived Variables
         ECR_REGISTRY = "${ACCOUNTID}.dkr.ecr.${REGION}.amazonaws.com"
         FULL_IMAGE_NAME = "${ECR_REGISTRY}/${IMAGENAME}:${IMAGE_TAG}"
     }
@@ -42,6 +46,9 @@ pipeline {
         }
         
         stage('Deploy Docker Container') {
+            when {
+                branch 'main'
+            }
             steps {
                 withCredentials([
                     sshUserPrivateKey(credentialsId: "${env.SSHCRED}", 
