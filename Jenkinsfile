@@ -53,11 +53,11 @@ pipeline {
             }
             steps {
                 withCredentials([
-                    sshUserPrivateKey(credentialsId: "${env.SSHCRED}", 
-                                    keyFileVariable: 'SSH_KEY_FILE')
+                    sshUserPrivateKey(credentialsId: "${env.SSHCRED}",  keyFileVariable: 'SSH_KEY_FILE'),
+                    aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID',  credentialsId: "${env.AWSCRED}", secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')
                 ]) {
                     sh """
-                        ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE docker pull 992382545251.dkr.ecr.us-east-1.amazonaws.com/amitay-jenk:latest/
+                        ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE "docker pull 992382545251.dkr.ecr.us-east-1.amazonaws.com/amitay-jenk:latest/"
                         ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE ${env.EC2_USER}@${env.EC2_HOST} "docker stop ${env.IMAGENAME} || true"
                         ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE ${env.EC2_USER}@${env.EC2_HOST} "docker rm ${env.IMAGENAME} || true"
                         ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE ${env.EC2_USER}@${env.EC2_HOST} "docker run -d --name ${env.IMAGENAME} -p 80:8080 ${env.FULL_IMAGE_NAME}"
