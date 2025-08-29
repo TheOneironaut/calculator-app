@@ -47,7 +47,7 @@ pipeline {
         
         stage('Deploy Docker Container') {
             when {
-                branch ${env.GIT_BRANCH}
+                branch "${env.GIT_BRANCH}"
             }
             steps {
                 withCredentials([
