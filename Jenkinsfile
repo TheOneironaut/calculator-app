@@ -24,6 +24,7 @@ pipeline {
     stages {
         stage('Build Docker Image') {
             steps {
+                echo "Running on branch: ${env.BRANCH_NAME}"
                 sh "docker build -t ${env.IMAGENAME}:${env.IMAGE_TAG} ."
                 sh "docker tag ${env.IMAGENAME}:${env.IMAGE_TAG} ${env.FULL_IMAGE_NAME}"
             }
@@ -47,7 +48,6 @@ pipeline {
         
         stage('Deploy Docker Container') {
             when {
-                echo branch
                 branch 'main'
             }
             steps {
