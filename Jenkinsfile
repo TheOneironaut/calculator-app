@@ -48,23 +48,31 @@ pipeline {
         stage('Deploy Docker Container') {
             when {
                 expression {
-                "${env.GIT_BRANCH}" == 'origin/main'
+                    "${env.GIT_BRANCH}" == 'origin/main'
                 }
             }
             steps {
                 withCredentials([
-                    sshUserPrivateKey(credentialsId: "${env.SSHCRED}",  keyFileVariable: 'SSH_KEY_FILE'),
-                    aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID',  credentialsId: "${env.AWSCRED}", secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')
+                    sshUserPrivateKey(credentialsId: "${env.SSHCRED}", keyFileVariable: 'SSH_KEY_FILE'),
+                    aws(accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: "${env.AWSCRED}", secretKeyVariable: 'AWS_SECRET_ACCESS_KEY')
                 ]) {
                     sh """
-                        ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE ${env.EC2_USER}@${env.EC2_HOST} "sudo docker pull 992382545251.dkr.ecr.us-east-1.amazonaws.com/amitay-jenk:latest"
-                        ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE ${env.EC2_USER}@${env.EC2_HOST} "sudo docker stop ${env.IMAGENAME} || true"
-                        ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE ${env.EC2_USER}@${env.EC2_HOST} "sudo docker rm ${env.IMAGENAME} || true"
-                        ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE ${env.EC2_USER}@${env.EC2_HOST} "sudo docker run -d --name ${env.IMAGENAME} -p 80:8080 ${env.FULL_IMAGE_NAME}"
+                        # הרצת פקודות מרוכבות על ה-EC2 instance
+                        ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE ${env.EC2_USER}@${env.EC2_HOST} "
+                            export AWS_ACCESS_KEY_ID=\$AWS_ACCESS_KEY_ID && \\
+                            export AWS_SECRET_ACCESS_KEY=\$AWS_SECRET_ACCESS_KEY && \\
+                            export AWS_DEFAULT_REGION=${env.REGION} && \\
+                            aws ecr get-login-password --region ${env.REGION} | sudo docker login --username AWS --password-stdin ${env.ECR_REGISTRY} && \\
+                            sudo docker pull ${env.FULL_IMAGE_NAME} && \\
+                            sudo docker stop ${env.IMAGENAME} || true && \\
+                            sudo docker rm ${env.IMAGENAME} || true && \\
+                            sudo docker run -d --name ${env.IMAGENAME} -p 80:8080 ${env.FULL_IMAGE_NAME}
+                        "
                     """
                 }
             }
         }
+
     }
 }
 
