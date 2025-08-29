@@ -46,6 +46,7 @@ pipeline {
         }
         
         stage('Deploy Docker Container') {
+            echo branch
             when {
                 branch 'main'
             }
