@@ -57,7 +57,7 @@ pipeline {
                                     keyFileVariable: 'SSH_KEY_FILE')
                 ]) {
                     sh """
-                        scp -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE Dockerrun.aws.json ${env.EC2_USER}@${env.EC2_HOST}:/home/${env.EC2_USER}/
+                        ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE docker pull 992382545251.dkr.ecr.us-east-1.amazonaws.com/amitay-jenk:latest/
                         ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE ${env.EC2_USER}@${env.EC2_HOST} "docker stop ${env.IMAGENAME} || true"
                         ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE ${env.EC2_USER}@${env.EC2_HOST} "docker rm ${env.IMAGENAME} || true"
                         ssh -o StrictHostKeyChecking=no -i \$SSH_KEY_FILE ${env.EC2_USER}@${env.EC2_HOST} "docker run -d --name ${env.IMAGENAME} -p 80:8080 ${env.FULL_IMAGE_NAME}"
